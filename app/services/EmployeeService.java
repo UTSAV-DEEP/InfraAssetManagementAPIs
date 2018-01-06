@@ -1,65 +1,60 @@
 package services;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import common.dto.AddFollowerRq;
 import common.dto.LoginRq;
 import common.dto.SignupRq;
-import common.models.User;
-import common.models.UserFollower;
+import common.models.Employee;
 import exceptions.ApplicationException;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.http.HttpStatus;
+import org.slf4j.LoggerFactory;
 import play.libs.Json;
 import play.mvc.Http;
 
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
-public class UserService {
+public class EmployeeService {
+
 
     public ObjectNode singup(SignupRq signupRq){
-        User user = new User();
-        user.setEmail(signupRq.getEmail());
-        user.setMobile(signupRq.getMobile());
-        user.setName(signupRq.getName());
+        Employee employee = new Employee();
+        employee.setEmail(signupRq.getEmail());
+        employee.setMobile(signupRq.getMobile());
+        employee.setName(signupRq.getName());
+        employee.setDesignation(signupRq.getDesignation());
+
         String hashedPassword = DigestUtils.sha256Hex(signupRq.getPassword());
-        user.setHashedPassword(hashedPassword);
-        user.save();
+        employee.setHashedPassword(hashedPassword);
+        employee.save();
         ObjectNode response = Json.newObject();
-        response.put("id", user.getId());
+        response.put("id", employee.getId());
         return response;
     }
 
     public ObjectNode login(LoginRq loginRq) throws ApplicationException {
         Http.Session session = Http.Context.current().session();
         String hashedPassword = DigestUtils.sha256Hex(loginRq.getPassword());
-        User user = User.find.where()
+        Employee employee = Employee.find.where()
                 .eq("email", loginRq.getEmail())
                 .eq("hashed_password", hashedPassword).findUnique();
-        if(null == user){
+        if(null == employee){
             throw new ApplicationException(HttpStatus.SC_UNAUTHORIZED, "Invalid email or password");
         }
         String uuid = UUID.randomUUID().toString();
-        session.put(uuid, String.valueOf(user.getId()));
+        session.put(uuid, String.valueOf(employee.getId()));
         ObjectNode response = Json.newObject();
         response.put("accessToken", uuid);
+        response.set("employeeData", employee.toObjectNode());
         return response;
     }
 
-    public void logout(Http.Session session, String sessionId) throws ApplicationException {
+    public void logout() throws ApplicationException {
+        String sessionId = Http.Context.current().request().getHeader("X-SESSIONID");
+        Http.Session session = Http.Context.current().session();
         String userIdStr = session.get(sessionId);
         if(null == userIdStr){
             throw new ApplicationException(HttpStatus.SC_UNAUTHORIZED, "You are not logged in");
         }
         session.remove(sessionId);
-    }
-
-    public void followUser(User user, AddFollowerRq request) throws ApplicationException {
-        User userFollowed = User.find.byId(request.getToFollowUserId());
-        if(null == userFollowed){
-            throw new ApplicationException(HttpStatus.SC_NOT_FOUND, "User to follow does not exist");
-        }
-        UserFollower userFollower = new UserFollower(user,userFollowed);
-        userFollower.save();
     }
 }

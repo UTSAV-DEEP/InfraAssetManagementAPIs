@@ -3,10 +3,13 @@ package common.models;
 import com.avaje.ebean.Model;
 import com.avaje.ebean.annotation.CreatedTimestamp;
 import com.avaje.ebean.annotation.UpdatedTimestamp;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import common.constants.ASSET_TYPE;
+import play.libs.Json;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
+import java.util.Objects;
 
 @Entity
 @Table(name = "assets")
@@ -26,9 +29,11 @@ public class Asset extends Model{
 
     private Timestamp warrantyExpiresAt;
 
+    private boolean isAvailable;
+
     @ManyToOne
     @JoinColumn(name = "manufacturer_id")
-    private long manufacturer;
+    private ManufacturingCompany manufacturer;
 
     @CreatedTimestamp
     private Timestamp createdAt;
@@ -84,12 +89,20 @@ public class Asset extends Model{
         this.warrantyExpiresAt = warrantyExpiresAt;
     }
 
-    public long getManufacturer() {
+    public ManufacturingCompany getManufacturer() {
         return manufacturer;
     }
 
-    public void setManufacturer(long manufacturer) {
+    public void setManufacturer(ManufacturingCompany manufacturer) {
         this.manufacturer = manufacturer;
+    }
+
+    public boolean isAvailable() {
+        return isAvailable;
+    }
+
+    public void setAvailable(boolean available) {
+        isAvailable = available;
     }
 
     public Timestamp getCreatedAt() {
@@ -109,6 +122,29 @@ public class Asset extends Model{
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Asset asset = (Asset) o;
+        return id == asset.id &&
+                Double.compare(asset.price, price) == 0 &&
+                isAvailable == asset.isAvailable &&
+                assetType == asset.assetType &&
+                Objects.equals(serialNumber, asset.serialNumber) &&
+                Objects.equals(modelNumber, asset.modelNumber) &&
+                Objects.equals(warrantyExpiresAt, asset.warrantyExpiresAt) &&
+                Objects.equals(manufacturer, asset.manufacturer) &&
+                Objects.equals(createdAt, asset.createdAt) &&
+                Objects.equals(updatedAt, asset.updatedAt);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(id, assetType, price, serialNumber, modelNumber, warrantyExpiresAt, isAvailable, manufacturer, createdAt, updatedAt);
+    }
+
+    @Override
     public String toString() {
         return "Asset{" +
                 "id=" + id +
@@ -117,10 +153,23 @@ public class Asset extends Model{
                 ", serialNumber='" + serialNumber + '\'' +
                 ", modelNumber='" + modelNumber + '\'' +
                 ", warrantyExpiresAt=" + warrantyExpiresAt +
+                ", isAvailable=" + isAvailable +
                 ", manufacturer=" + manufacturer +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 '}';
+    }
+
+    public ObjectNode toObjectNode() {
+        ObjectNode node = Json.newObject();
+        node.put("id",id);
+        node.put("assetType", assetType.name());
+        node.put("serialNumber", serialNumber);
+        node.put("modelNumber", modelNumber);
+        node.put("warrantyExpiresAt", warrantyExpiresAt.toString());
+        node.put("manufacturer", manufacturer.getRegisteredName());
+        node.put("price", price);
+        return node;
     }
 
     public static final Find<Long, Asset> find = new Find<Long, Asset>() {};

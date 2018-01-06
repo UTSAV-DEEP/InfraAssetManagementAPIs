@@ -1,0 +1,3 @@
+POST        /               controllers.EmployeeController.signup()
+POST        /token          controllers.EmployeeController.login()
+DELETE      /token          controllers.EmployeeController.logout()

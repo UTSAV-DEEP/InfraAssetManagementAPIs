@@ -310,7 +310,7 @@ Usage: $script_name [options]
 
   Command:
   ui                 Start the Activator UI
-  new [name] [template-id]  Create a new project with [name] using template [template-id]
+  new [registeredName] [template-id]  Create a new project with [registeredName] using template [template-id]
   list-templates     Print all available template names
 
   Options:
