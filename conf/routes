@@ -3,7 +3,7 @@
 # ~~~~
 
 
-->              /v1/employees                   employee.Routes
-->              /v1/infra-assets                infra_asset.Routes
-->              /v1/employee-infra-assets       employee_infra_asset.Routes
+->              /v1/employees                   employees.Routes
+->              /v1/infra-assets                infra_assets.Routes
+->              /v1/employee-infra-assets       employee_assets.Routes
 ->              /v1/manufacturers               manufacturers.Routes

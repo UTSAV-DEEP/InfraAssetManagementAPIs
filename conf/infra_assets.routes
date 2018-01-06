@@ -1,2 +1,2 @@
-POST        /           controllers.AssetService.purchaseAsset()
-PUT         /           controllers.AssetService.updateAssetPurchaseOrder()
+POST        /           controllers.AssetController.purchaseAsset()
+PUT         /           controllers.AssetController.updateAssetPurchaseOrder()
